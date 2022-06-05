@@ -28,6 +28,7 @@ class MySpider():
             'LOG_LEVEL': scrapy_settings.LOG_LEVEL,
             'COOKIES_ENABLED': scrapy_settings.COOKIES_ENABLED,
             'CONCURRENT_REQUESTS': scrapy_settings.CONCURRENT_REQUESTS,
+            'LATENCIES_INTERVAL':scrapy_settings.LATENCIES_INTERVAL,
         }
 
     def crawler_signals(self, crawler):

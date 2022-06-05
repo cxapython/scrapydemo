@@ -3,7 +3,9 @@
 # @Author : chenxiangan
 # @File : mongo_pipeline.py
 # @Software: PyCharm
+
 import pymongo
+from twisted.internet import defer, reactor
 
 db_configs = {
     'type': 'mongo',
@@ -29,19 +31,18 @@ class MongoPipeline():
             self.db = self.client[self.db_name].authenticate(self.username, self.password)
         self.db = self.client[self.db_name]
 
-    def close_spider(self, spider):
-        self.client.close()
-
-    def process_item(self, item, spider):
-        # for field in item.fields:
-        #     item.setdefault(field, '')
-        collection_name = spider.name
-        # update_key = "object_id"
-        # if not item.get("object_id"):
-        #     update_key = "url"
-        # if not item.get("url"):
-        #     update_key = "link_url"
-        # self.db[collection_name].update_one({update_key: item[update_key]}, {'$set': item}, upsert=True)
-        print(f"插入到mongo的数据为:{item}")
-        self.db[collection_name].insert_one(item)
+    async def process_item(self, item, spider):
+        out = defer.Deferred()
+        reactor.callInThread(self._do_calculation, item, spider, out)
+        await out
         return item
+
+    def _do_calculation(self, item, spider, out):
+        collection_name = spider.name
+        #         # update_key = "object_id"
+        #         # if not item.get("object_id"):
+        #         #     update_key = "url"
+        #         # if not item.get("url"):
+        #         #     update_key = "link_url"
+        #         # self.db[collection_name].update_one({update_key: item[update_key]}, {'$set': item}, upsert=True)
+        reactor.callFromThread(out.callback, self.db[collection_name].insert_one(item))

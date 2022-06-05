@@ -17,7 +17,8 @@ NEWSPIDER_MODULE = 'myproject.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'myproject (+http://www.yourdomain.com)'
-
+# 设置设置吞吐量和延迟的时间间隔
+LATENCIES_INTERVAL = 5
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
@@ -59,6 +60,7 @@ DOWNLOADER_MIDDLEWARES = {
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 EXTENSIONS = {
    'myproject.extensions.myextension.MyExtension':222 ,
+    'myproject.extensions.latencies.Latencies': 223,
 }
 LOG_LEVEL = "INFO"
 
@@ -67,6 +69,7 @@ LOG_LEVEL = "INFO"
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    'myproject.pipelines.mongo_pipeline.MongoPipeline': 300,
+
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
