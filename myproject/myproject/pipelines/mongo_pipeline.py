@@ -33,6 +33,8 @@ class MongoPipeline():
         self.client.close()
 
     def process_item(self, item, spider):
+        # for field in item.fields:
+        #     item.setdefault(field, '')
         collection_name = spider.name
         # update_key = "object_id"
         # if not item.get("object_id"):
