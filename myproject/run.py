@@ -31,7 +31,6 @@ class MySpider():
         }
 
     def crawler_signals(self, crawler):
-        # 正常写下来会导致代码重复， 所以设置一个字典， 左边是自写的函数， 右边是待hook的函数
         signals_dict = {
             self.spider_opened: signals.spider_opened,
             self.spider_closed: signals.spider_closed,
@@ -70,4 +69,4 @@ class MySpider():
 
 if __name__ == '__main__':
     m = MySpider()
-    m.run("baidu_spider")
+    m.run(spider_name="baidu_spider")
