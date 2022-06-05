@@ -1,8 +1,10 @@
 # scrapydemo
 scrapy查漏补缺
+### Scrapy数据执行流程
 
 scrapy框架数据流 Scrapy中的数据流由执行引擎控制，其过程如下：
-![](flow.png)
+
+![流程图](myproject/flow.png)
 1.引擎从Spiders中获取到的最初的要爬取的请求(Requests)。
 
 2.引擎安排请求(Requests)到调度器中，并向调度器请求下一个要爬取的请求(Requests)。
@@ -25,7 +27,8 @@ scrapy框架数据流 Scrapy中的数据流由执行引擎控制，其过程如�
 9.(从第二步)重复知道调度器中没有更多的请求(Requests)。
 
 
-信号的执行流程如下:
+
+### 信号的执行流程
 
 1.整个运行过程中信号的执行流程 首先我们获取下面两个信号 `spider_opened`和 `engine_started`,爬虫开始和引擎开始的信号。 
 
