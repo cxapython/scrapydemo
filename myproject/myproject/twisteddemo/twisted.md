@@ -298,3 +298,83 @@ if __name__ == '__main__':
 #### 内联回调
 
 inlineCallbacks,是一个装饰器，它总是装饰生成器函数，如那些使用yield的函数，它唯一目的就是将一个个生成器转化为一系列异步回调，每个回调被yield分隔，yield的返回值会传到下一个回调。
+```
+def inlineCallbacks(f):
+    @wraps(f)
+    def unwindGenerator(*args, **kwargs):
+        # 调用被装饰的函数，要求其必须返回一个生成器对象，否则抛出异常
+        try:
+            gen = f(*args, **kwargs)
+        except _DefGen_Return:
+            raise TypeError(
+                "inlineCallbacks requires %r to produce a generator; instead"
+                "caught returnValue being used in a non-generator" % (f,))
+        if not isinstance(gen, types.GeneratorType):
+            raise TypeError(
+                "inlineCallbacks requires %r to produce a generator; "
+                "instead got %r" % (f, gen))
+        # _inlineCallbacks是一个调度器
+        return _inlineCallbacks(None, gen, Deferred())
+    return unwindGenerator
+
+def _inlineCallbacks(result, g, deferred):
+    waiting = [True, # waiting for result?
+               None] # result
+
+    while 1:
+        try:
+            # 每次启动生成器，它yield的值可以是：
+            #     1，非Deferred对象且非Failure对象，那么使用这个对象，继续启动生成器
+            #     2，已完成的Deffered对象，那么使用这个Deferred对象的结果，继续启动生成器
+            #     3，未完成的Deferred对象，那么给这个Deferred对象增加一个回调函数：当该Deferred对象完成时，使用其结果，继续启动生成器
+            #     4，Failure对象，那么则将Failure对象封装的异常，传递给生成器（不仅可以在生成器外部使用send()方法向其传值，还可以使用throw()方法向其传递异常）
+            #         注意：当一个异步操作出现异常时，twisted会将异常信息封装进一个Failure对象
+            # 简而言之就是：第一次是使用None启动生成器，之后每次都是使用上一次的结果启动生成器
+
+            isFailure = isinstance(result, failure.Failure)
+            if isFailure:
+                result = result.throwExceptionIntoGenerator(g)
+            else:
+                result = g.send(result)
+        except StopIteration as e:
+            # 当生成器完成时，将deferred置为完成
+            deferred.callback(getattr(e, "value", None))
+            return deferred
+        except _DefGen_Return as e:
+            # 当通过returnValue()函数抛出_DefGen_Return异常时，那么从异常对象中提取值，并将其作为deferred的结果
+            ...
+            deferred.callback(e.value)
+            return deferred
+        except:
+            # 启动生成器抛出其他异常时，将deferred置为失败
+            deferred.errback()
+            return deferred
+
+        # 下面是生成器返回Deferred对象时的情形
+        if _isinstance(result, Deferred):
+            def gotResult(r):
+                if waiting[0]:
+                    waiting[0] = False
+                    waiting[1] = r
+                else:
+                    _inlineCallbacks(r, g, deferred)
+
+            # 如果result已经完成，那么会立刻调用gotResult()函数，
+            #     gotResult()会将waiting[0]设置为False，waiting[1]保存result的结果，接下来会走 分支2；否则会走 分支1。
+            result.addBoth(gotResult)
+
+            # 分支1
+            if waiting[0]:
+                # 将waiting[0]置为False，当result完成时，会调用gotResult()，因为waiting[0]是False，所以会走其else分支，它会使用result的结果继续启动生成器
+                waiting[0] = False
+                return deferred
+
+            # 分支2
+            # result保存Deferred对象的结果，并重置状态，然后继续下一次循环
+            result = waiting[1]
+
+            waiting[0] = True
+            waiting[1] = None
+
+    return deferred
+```
