@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import asyncio
+
 import scrapy
 from scrapy import Request
 from twisted.internet import reactor
@@ -20,7 +22,8 @@ class BaiDuSpider(scrapy.Spider):
             "time": 5,
             "callback": self.parse,
         }
-        yield Request(url,headers=self.headers, dont_filter=True, meta=meta, callback=self.request_with_pause)
+        # yield Request(url,headers=self.headers, dont_filter=True, meta=meta, callback=self.request_with_pause)
+        yield Request(url,headers=self.headers, dont_filter=True, meta=meta, callback=self.parse)
 
     def parse_item(self, selector, response):
         """
@@ -45,24 +48,29 @@ class BaiDuSpider(scrapy.Spider):
             callback=response.meta['callback'],
             dont_filter=True))
         return d
-
-    def parse(self, response):
+    async def parse(self,response):
         data_list = response.xpath("//div[@id='content_left']/div[@mu]")
 
-        # 1.普通方法
-        # for each_item in data_list:
-        #     item = {}
-        #     url = each_item.xpath(".//@mu").get("").strip()
-        #     title = each_item.xpath(".//h3/a/text()").get("").strip()
-        #     if not title:
-        #         continue
-        #     item["link_url"] = url
-        #     item["title"] = title
-        #     item.add_value("website",response.meta['title'])
-        #     yield item
-
-        #2.使用自定义itemloader的形式
         for selector in data_list:
+            await asyncio.sleep(5)
             yield self.parse_item(selector, response)
+    # def parse(self, response):
+    #     data_list = response.xpath("//div[@id='content_left']/div[@mu]")
+    #
+    #     # 1.普通方法
+    #     # for each_item in data_list:
+    #     #     item = {}
+    #     #     url = each_item.xpath(".//@mu").get("").strip()
+    #     #     title = each_item.xpath(".//h3/a/text()").get("").strip()
+    #     #     if not title:
+    #     #         continue
+    #     #     item["link_url"] = url
+    #     #     item["title"] = title
+    #     #     item.add_value("website",response.meta['title'])
+    #     #     yield item
+    #
+    #     #2.使用自定义itemloader的形式
+    #     for selector in data_list:
+    #         yield self.parse_item(selector, response)
 
 

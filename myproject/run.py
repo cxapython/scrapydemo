@@ -5,8 +5,11 @@
 # @Software: PyCharm
 import time
 
-from scrapy import signals
+from scrapy import signals, Request
 from scrapy.crawler import CrawlerProcess, Crawler
+from scrapy.utils.reactor import install_reactor
+
+install_reactor('twisted.internet.asyncioreactor.AsyncioSelectorReactor')
 
 from myproject import settings as scrapy_settings
 

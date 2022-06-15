@@ -44,7 +44,10 @@
 #     reactor.run()
 
 #对于Python3可以使用async/await
+import asyncio
+
 from twisted.internet import reactor, defer
+from twisted.internet.defer import Deferred
 
 
 def callback(num):
