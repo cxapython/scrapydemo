@@ -1,17 +1,26 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from scrapy import Request
+from twisted.internet import reactor
+from twisted.internet.defer import Deferred
+
 from myproject.itemloader.myitemloader import MyItemLoader
 from myproject.items.items import BaiDuItem
 
 
 class BaiDuSpider(scrapy.Spider):
     name = 'baidu_spider'
-
+    headers = {
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36',
+    }
     def start_requests(self):
         url = "https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&rsv_idx=1&tn=baidu&wd=request_reached_downloader"
-        meta = {"web_site": "baidu"}
-        yield Request(url, dont_filter=True, meta=meta, callback=self.parse)
+        meta = {
+            "web_site": "baidu",
+            "time": 5,
+            "callback": self.parse,
+        }
+        yield Request(url,headers=self.headers, dont_filter=True, meta=meta, callback=self.request_with_pause)
 
     def parse_item(self, selector, response):
         """
@@ -28,6 +37,14 @@ class BaiDuSpider(scrapy.Spider):
 
 
 
+    def request_with_pause(self, response):
+        d = Deferred()
+        reactor.callLater(response.meta['time'], d.callback, Request(
+            response.url,
+            headers=self.headers,
+            callback=response.meta['callback'],
+            dont_filter=True))
+        return d
 
     def parse(self, response):
         data_list = response.xpath("//div[@id='content_left']/div[@mu]")
