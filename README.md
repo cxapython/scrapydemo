@@ -9,7 +9,7 @@ scrapy框架数据流 Scrapy中的数据流由执行引擎控制，其过程如�
 
 2.引擎安排请求(Requests)到调度器中，并向调度器请求下一个要爬取的请求(Requests)。
 
-3.调度器返回下一个要爬取的请求(Request)给请求。
+3.调度器返回下一个要爬取的请求(Request)给引擎。
 
 4.引擎从上步中得到的请求(Requests)通过下载器中间件(Downloader Middlewares)发送给下载器(Downloader),这个过程中下载器中间件(Downloader Middlerwares)
 中的process_request()函数就会被调用。
