@@ -1,28 +1,28 @@
 # scrapydemo
-scrapy查漏补缺
-### Scrapy数据执行流程
+scrapy 查漏补缺
+### Scrapy 数据执行流程
 
-scrapy框架数据流 Scrapy中的数据流由执行引擎控制，其过程如下：
+scrapy 框架数据流 Scrapy中的数据流由执行引擎控制，其过程如下：
 
 ![流程图](myproject/flow.png)
-1.引擎从Spiders中获取到的最初的要爬取的请求(Requests)。
+1.引擎从 Spiders 中获取到的最初的要爬取的请求( Requests )。
 
 2.引擎安排请求(Requests)到调度器中，并向调度器请求下一个要爬取的请求(Requests)。
 
-3.调度器返回下一个要爬取的请求(Request)给引擎。
+3.调度器返回下一个要爬取的请求 (Request) 给引擎。
 
-4.引擎从上步中得到的请求(Requests)通过下载器中间件(Downloader Middlewares)发送给下载器(Downloader),这个过程中下载器中间件(Downloader Middlerwares)
+4.引擎从上步中得到的请求 (Requests) 通过下载器中间件 (Downloader Middlewares) 发送给下载器 (Downloader),这个过程中下载器中间件(Downloader Middlerwares)
 中的process_request()函数就会被调用。
 
-5.一旦页面下载完毕，下载器生成一个该页面的Response，并将其通过下载中间件(Downloader Middlewares)中的process_response()函数，最后返回给引擎
+5.一旦页面下载完毕，下载器生成一个该页面的 Response，并将其通过下载中间件(Downloader Middlewares)中的 process_response()函数，最后返回给引擎
 
-6.引擎从下载器中得到上步中的Response并通过Spider中间件(Spider Middewares)发送给Spider处理，这个过程中Spider中间件(Spider Middlewares)
-中的process_spider_input()函数会被调用到。
+6.引擎从下载器中得到上步中的 Response 并通过 Spider 中间件(Spider Middewares)发送给Spider处理，这个过程中 Spider 中间件(Spider Middlewares)
+中的 process_spider_input() 函数会被调用到。
 
-7Spider处理Response并通过Spider中间件(Spider Middlewares)返回爬取到的Item及(跟进的)新的Request给引擎，这个过程中Spider中间件(Spider Middlewares)
-的process_spider_output()函数会被调用到。
+7.Spider 处理 Response 并通过Spider中间件(Spider Middlewares)返回爬取到的Item及(跟进的)新的Request给引擎，这个过程中Spider中间件(Spider Middlewares)
+的 process_spider_output() 函数会被调用到。
 
-8.引擎将上步中Spider处理的及其爬取到的Item给Item管道(Piplline),将Spider处理的Requests发送给调度器，并向调度器请求可能存在的下一个要爬取的请求(Requests)
+8.引擎将上步中 Spider 处理的及其爬取到的 Item 给Item管道(Piplline),将Spider处理的 Requests 发送给调度器，并向调度器请求可能存在的下一个要爬取的请求(Requests)
 
 9.(从第二步)重复知道调度器中没有更多的请求(Requests)。
 
